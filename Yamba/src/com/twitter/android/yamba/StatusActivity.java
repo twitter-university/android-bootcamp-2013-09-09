@@ -1,7 +1,6 @@
 
 package com.twitter.android.yamba;
 
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.res.Resources;
@@ -12,40 +11,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import com.marakana.android.yamba.clientlib.YambaClient;
-import com.marakana.android.yamba.clientlib.YambaClientException;
+import com.twitter.android.yamba.svc.YambaService;
 
 public class StatusActivity extends Activity {
     public static final String TAG = "STATUS";
-
-    class Poster extends AsyncTask<String, Void, Integer> {
-
-        @Override
-        protected Integer doInBackground(String... status) {
-            int message = R.string.fail;
-            try {
-                client.postStatus(status[0]);
-                message = R.string.success;
-            }
-            catch (YambaClientException e) {
-                Log.e(TAG, "Post failed");
-            }
-            return Integer.valueOf(message);
-        }
-
-        @Override
-        protected void onPostExecute(Integer result) {
-            Toast.makeText(StatusActivity.this, result.intValue(), Toast.LENGTH_LONG).show();
-            poster = null;
-        }
-    }
-
-    static Poster poster;
-
-
-    volatile YambaClient client;
 
     private int okColor;
     private int warnColor;
@@ -70,8 +39,6 @@ public class StatusActivity extends Activity {
         warnMax = rez.getInteger(R.integer.warn_limit);
         errColor = rez.getColor(R.color.red);
         errMax = rez.getInteger(R.integer.err_limit);
-
-        client = new YambaClient("student", "password");
 
         setContentView(R.layout.activity_status);
 
@@ -114,15 +81,12 @@ public class StatusActivity extends Activity {
     }
 
     void post() {
-        if (null != poster) { return; }
-
         String status = statusView.getText().toString();
         if (BuildConfig.DEBUG) { Log.d(TAG, "posting: " + status); }
         if (!checkStatusLen(status.length())) { return; }
 
         statusView.setText("");
-        poster = new Poster();
-        poster.execute(status);
+        YambaService.post(this, status);
     }
 
     private boolean checkStatusLen(int n) {
