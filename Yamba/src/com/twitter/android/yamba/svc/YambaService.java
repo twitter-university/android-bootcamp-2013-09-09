@@ -1,19 +1,6 @@
-/* $Id: $
-   Copyright 2013, G. Blake Meike
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
-
-   Unless required by applicable law or agreed to in writing, software
-   distributed under the License is distributed on an "AS IS" BASIS,
-   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-   See the License for the specific language governing permissions and
-   limitations under the License.
-*/
 package com.twitter.android.yamba.svc;
+
+import java.util.List;
 
 import android.app.AlarmManager;
 import android.app.IntentService;
@@ -26,6 +13,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.marakana.android.yamba.clientlib.YambaClient;
+import com.marakana.android.yamba.clientlib.YambaClient.Status;
 import com.marakana.android.yamba.clientlib.YambaClientException;
 import com.twitter.android.yamba.BuildConfig;
 import com.twitter.android.yamba.R;
@@ -34,12 +22,14 @@ import com.twitter.android.yamba.R;
 public class YambaService extends IntentService {
     private static final String TAG = "SVC";
 
-    static final int OP_POST_COMPLETE = -1;
-
     private static final String PARAM_STATUS = "YambaService.STATUS";
+    private static final String PARAM_OP = "YambaService.OP";
+
+    static final int OP_POST_COMPLETE = -1;
+    static final int OP_POST = -2;
+    static final int OP_POLL = -3;
 
     private static final int POLLER = 666;
-
 
     private static class Hdlr extends Handler {
         private final  YambaService svc;
@@ -61,22 +51,24 @@ public class YambaService extends IntentService {
     public static void post(Context ctxt, String status) {
         if (BuildConfig.DEBUG) { Log.d(TAG, "posting: " + status); }
         Intent i = new Intent(ctxt, YambaService.class);
+        i.putExtra(PARAM_OP, OP_POST);
         i.putExtra(PARAM_STATUS, status);
         ctxt.startService(i);
     }
 
     public static void startPoller(Context ctxt) {
         AlarmManager mgr = (AlarmManager) ctxt.getSystemService(Context.ALARM_SERVICE);
-         mgr.setInexactRepeating(
-                 AlarmManager.RTC,
-                 System.currentTimeMillis() + 100,
-                 30 * 1000,
+        mgr.setInexactRepeating(
+                AlarmManager.RTC,
+                System.currentTimeMillis() + 100,
+                30 * 1000,
                 createPollingIntent(ctxt));
     }
 
     private static PendingIntent createPollingIntent(Context ctxt) {
         Intent i = new Intent(ctxt, YambaService.class);
-       return PendingIntent.getService(
+        i.putExtra(PARAM_OP, OP_POLL);
+        return PendingIntent.getService(
                 ctxt,
                 POLLER,
                 i,
@@ -94,9 +86,7 @@ public class YambaService extends IntentService {
         hdlr = new Hdlr(this);
 
         client = new YambaClient("student", "password");
-
-        startPoller(this);
-    }
+   }
 
     public YambaService() { super(TAG); }
 
@@ -106,7 +96,22 @@ public class YambaService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent i) {
-        String status = i.getStringExtra(PARAM_STATUS);
+        int op = i.getIntExtra(PARAM_OP, 0);
+        switch (op) {
+            case OP_POST:
+                doPost(i.getStringExtra(PARAM_STATUS));
+                break;
+
+            case OP_POLL:
+                doPoll();
+                break;
+
+            default:
+                Log.e(TAG, "Unexpected op: " + op);
+        }
+    }
+
+    private void doPost(String status) {
         int msg = R.string.fail;
         try {
             client.postStatus(status);
@@ -120,10 +125,22 @@ public class YambaService extends IntentService {
         Message.obtain(hdlr, OP_POST_COMPLETE, msg, 0).sendToTarget();
     }
 
-    private void poll() {
+    private void doPoll() {
         if (BuildConfig.DEBUG) { Log.d(TAG, "poll"); }
-        try { client.getTimeline(20); }
+        try { parseTimeline(client.getTimeline(20)); }
         catch (YambaClientException e) {
+            Log.e(TAG, "Post failed");
+        }
+    }
+
+    private void parseTimeline(List<Status> timeline) {
+        for (Status status: timeline) {
+            if (BuildConfig.DEBUG) {
+                Log.d(TAG, "Id: " + status.getId());
+                Log.d(TAG, "  timestamp: " + status.getCreatedAt());
+                Log.d(TAG, "  user: " + status.getUser());
+                Log.d(TAG, "  message: " + status.getMessage());
+            }
         }
     }
 }
