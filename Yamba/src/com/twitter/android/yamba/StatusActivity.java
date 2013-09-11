@@ -98,7 +98,11 @@ public class StatusActivity extends Activity {
     }
 
     void updateCount() {
-        int n = statusLenMax - statusView.getText().length();
+        int n = statusView.getText().length();
+
+        submitButton.setEnabled(checkStatusLen(n));
+
+        n = statusLenMax - n;
 
         int color;
         if (n > warnMax) { color = okColor; }
@@ -107,23 +111,21 @@ public class StatusActivity extends Activity {
 
         countView.setText(String.valueOf(n));
         countView.setTextColor(color);
-        submitButton.setEnabled(checkText(n));
     }
 
     void post() {
-        String status = statusView.getText().toString();
-
-        if (BuildConfig.DEBUG) { Log.d(TAG, "posting: " + status); }
-        if (!checkText(status.length())) { return; }
-
         if (null != poster) { return; }
 
-        poster = new Poster();
+        String status = statusView.getText().toString();
+        if (BuildConfig.DEBUG) { Log.d(TAG, "posting: " + status); }
+        if (!checkStatusLen(status.length())) { return; }
+
         statusView.setText("");
+        poster = new Poster();
         poster.execute(status);
     }
 
-    private boolean checkText(int n) {
-        return (n > errMax) && (n < statusLenMax);
+    private boolean checkStatusLen(int n) {
+        return (errMax < n) && (statusLenMax > n);
     }
 }
