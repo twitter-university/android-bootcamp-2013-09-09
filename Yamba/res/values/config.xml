@@ -4,4 +4,6 @@
     <integer name="status_limit">140</integer>
     <integer name="warn_limit">10</integer>
     <integer name="err_limit">0</integer>
+    <integer name="poll_size">20</integer>
+    <integer name="poll_interval">3</integer>
 </resources>

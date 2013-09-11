@@ -5,8 +5,10 @@ import java.util.List;
 import android.app.AlarmManager;
 import android.app.IntentService;
 import android.app.PendingIntent;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -17,6 +19,7 @@ import com.marakana.android.yamba.clientlib.YambaClient.Status;
 import com.marakana.android.yamba.clientlib.YambaClientException;
 import com.twitter.android.yamba.BuildConfig;
 import com.twitter.android.yamba.R;
+import com.twitter.android.yamba.data.YambaDbHelper;
 
 
 public class YambaService extends IntentService {
@@ -57,11 +60,13 @@ public class YambaService extends IntentService {
     }
 
     public static void startPoller(Context ctxt) {
-        AlarmManager mgr = (AlarmManager) ctxt.getSystemService(Context.ALARM_SERVICE);
-        mgr.setInexactRepeating(
+        long interval = getPollIntervalMs(ctxt);
+        if (0 >= interval) { return; }
+        ((AlarmManager) ctxt.getSystemService(Context.ALARM_SERVICE))
+            .setInexactRepeating(
                 AlarmManager.RTC,
                 System.currentTimeMillis() + 100,
-                30 * 1000,
+                interval,
                 createPollingIntent(ctxt));
     }
 
@@ -75,7 +80,22 @@ public class YambaService extends IntentService {
                 PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
+    private static synchronized long getPollIntervalMs(Context ctxt) {
+        if (0 >= pollInterval) {
+            long i = ctxt.getResources().getInteger(R.integer.poll_interval);
+            if (0 < i) { pollInterval = i * 60 * 1000; }
+            else { Log.e(TAG, "failed retreiving poll interval");  }
+        }
+        return pollInterval;
+    }
+
+    // LAZILY INITIALIZED!  Use getPollInterval().
+    private static long pollInterval;
+
+
     private volatile YambaClient client;
+    private volatile YambaDbHelper db;
+    private volatile int pollSize;
     private volatile Hdlr hdlr;
 
     @Override
@@ -83,9 +103,13 @@ public class YambaService extends IntentService {
         super.onCreate();
         if (BuildConfig.DEBUG) { Log.d(TAG, "service created"); }
 
-        hdlr = new Hdlr(this);
+        pollSize = getResources().getInteger(R.integer.poll_size);
 
         client = new YambaClient("student", "password");
+
+        db = new YambaDbHelper(this);
+
+        hdlr = new Hdlr(this);
    }
 
     public YambaService() { super(TAG); }
@@ -127,20 +151,19 @@ public class YambaService extends IntentService {
 
     private void doPoll() {
         if (BuildConfig.DEBUG) { Log.d(TAG, "poll"); }
-        try { parseTimeline(client.getTimeline(20)); }
+        try { parseTimeline(client.getTimeline(pollSize)); }
         catch (YambaClientException e) {
-            Log.e(TAG, "Post failed");
+            Log.e(TAG, "Poll failed");
         }
     }
 
     private void parseTimeline(List<Status> timeline) {
+        SQLiteDatabase database = db.getWritableDatabase();
         for (Status status: timeline) {
-            if (BuildConfig.DEBUG) {
-                Log.d(TAG, "Id: " + status.getId());
-                Log.d(TAG, "  timestamp: " + status.getCreatedAt());
-                Log.d(TAG, "  user: " + status.getUser());
-                Log.d(TAG, "  message: " + status.getMessage());
-            }
+            ContentValues cv = new ContentValues();
+            cv.put(YambaDbHelper.COL_ID, Long.valueOf(status.getId()));
+            cv.put("timestamp", Long.valueOf(status.getCreatedAt().getTime()));
+            database.insert(YambaDbHelper.TABLE_TIMELINE, null, cv);
         }
     }
 }
