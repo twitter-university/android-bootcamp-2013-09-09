@@ -25,7 +25,7 @@
             </intent-filter>
         </activity>
         <service
-            android:name=".MyIntentService" />
+            android:name=".svc.YambaService" />
     </application>
 
 </manifest>

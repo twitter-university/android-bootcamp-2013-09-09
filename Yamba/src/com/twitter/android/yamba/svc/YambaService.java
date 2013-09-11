@@ -15,7 +15,9 @@
 */
 package com.twitter.android.yamba.svc;
 
+import android.app.AlarmManager;
 import android.app.IntentService;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
@@ -36,6 +38,9 @@ public class YambaService extends IntentService {
 
     private static final String PARAM_STATUS = "YambaService.STATUS";
 
+    private static final int POLLER = 666;
+
+
     private static class Hdlr extends Handler {
         private final  YambaService svc;
 
@@ -47,6 +52,8 @@ public class YambaService extends IntentService {
                 case OP_POST_COMPLETE:
                     svc.postComplete(msg.arg1);
                     break;
+                default:
+                    if (BuildConfig.DEBUG) { Log.d(TAG, "unexpected message: " + msg.what); }
             }
         }
     }
@@ -58,6 +65,23 @@ public class YambaService extends IntentService {
         ctxt.startService(i);
     }
 
+    public static void startPoller(Context ctxt) {
+        AlarmManager mgr = (AlarmManager) ctxt.getSystemService(Context.ALARM_SERVICE);
+         mgr.setInexactRepeating(
+                 AlarmManager.RTC,
+                 System.currentTimeMillis() + 100,
+                 30 * 1000,
+                createPollingIntent(ctxt));
+    }
+
+    private static PendingIntent createPollingIntent(Context ctxt) {
+        Intent i = new Intent(ctxt, YambaService.class);
+       return PendingIntent.getService(
+                ctxt,
+                POLLER,
+                i,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+    }
 
     private volatile YambaClient client;
     private volatile Hdlr hdlr;
@@ -70,6 +94,8 @@ public class YambaService extends IntentService {
         hdlr = new Hdlr(this);
 
         client = new YambaClient("student", "password");
+
+        startPoller(this);
     }
 
     public YambaService() { super(TAG); }
@@ -92,5 +118,12 @@ public class YambaService extends IntentService {
         }
 
         Message.obtain(hdlr, OP_POST_COMPLETE, msg, 0).sendToTarget();
+    }
+
+    private void poll() {
+        if (BuildConfig.DEBUG) { Log.d(TAG, "poll"); }
+        try { client.getTimeline(20); }
+        catch (YambaClientException e) {
+        }
     }
 }
