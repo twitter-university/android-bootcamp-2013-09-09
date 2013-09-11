@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--  Application -->
+    <string name="app_name">Yamba</string>
+    
+    <!--  Status -->
+    <string name="status_label">Status</string>
+    <string name="status_count">140</string>
+    <string name="status_hint">Wazzup?</string>
+    <string name="status_submit">Submit</string>
+    <string name="fail">Post failed!</string>
+    <string name="success">Post succeeded!</string>
+
+</resources>
