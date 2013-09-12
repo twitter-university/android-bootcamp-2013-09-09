@@ -11,13 +11,13 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
-        android:name=".YambaApplication"
+        android:name="com.twitter.android.yamba.YambaApplication"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".StatusActivity"
+            android:name="com.twitter.android.yamba.TimelineActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -25,13 +25,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <service android:name=".svc.YambaService" />
+        <activity android:name="com.twitter.android.yamba.StatusActivity" />
+        
+        <service android:name="com.twitter.android.yamba.svc.YambaService" />
 
         <provider
-            android:name=".data.YambaProvider"
+            android:name="com.twitter.android.yamba.data.YambaProvider"
             android:authorities="com.twitter.android.yamba.timeline"
             android:exported="false" />
+
     </application>
 
 </manifest>

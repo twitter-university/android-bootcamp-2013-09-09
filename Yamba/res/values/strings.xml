@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!--  Application -->
+    <!-- Application -->
     <string name="app_name">Yamba</string>
-    
-    <!--  Status -->
+
+    <!-- Status -->
     <string name="status_label">Status</string>
     <string name="status_count">140</string>
     <string name="status_hint">Wazzup?</string>

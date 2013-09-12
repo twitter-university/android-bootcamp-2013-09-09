@@ -62,7 +62,8 @@ public class YambaProvider extends ContentProvider {
         .addColumn(
                 YambaContract.Timeline.Columns.MAX_TIMESTAMP,
                 "max(" + YambaDbHelper.COL_TIMESTAMP + ")")
-        .build().getProjectionMap();
+        .build()
+        .getProjectionMap();
 
 
     private YambaDbHelper dbHelper;
