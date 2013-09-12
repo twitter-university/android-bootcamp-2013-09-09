@@ -18,6 +18,8 @@ class YambaDbHelper extends SQLiteOpenHelper {
     static final String COL_USER = "p_user";
     static final String COL_STATUS = "p_status";
 
+    private static final String TABLE_TIMELINE_V1 = "timeline";
+
     public YambaDbHelper(Context context) {
         super(context, DATABASE, null, VERSION);
     }
@@ -36,7 +38,7 @@ class YambaDbHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         Log.d(TAG, "update db");
-        db.execSQL("DROP TABLE " + TABLE_TIMELINE);
+        db.execSQL("DROP TABLE " + TABLE_TIMELINE_V1);
         onCreate(db);
     }
 }

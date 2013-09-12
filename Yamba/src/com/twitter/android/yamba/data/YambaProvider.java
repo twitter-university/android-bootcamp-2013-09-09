@@ -1,5 +1,7 @@
 package com.twitter.android.yamba.data;
 
+import java.util.Map;
+
 import android.content.ContentProvider;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -34,12 +36,33 @@ public class YambaProvider extends ContentProvider {
     }
 
     private static final ColumnMap COL_MAP_TIMELINE = new ColumnMap.Builder()
-        .addColumn(YambaContract.Timeline.Columns.ID, YambaDbHelper.COL_ID, ColumnMap.Type.LONG)
+        .addColumn(
+                YambaContract.Timeline.Columns.ID,
+                YambaDbHelper.COL_ID,
+                ColumnMap.Type.LONG)
+        .addColumn(
+                YambaContract.Timeline.Columns.TIMESTAMP,
+                YambaDbHelper.COL_TIMESTAMP,
+                ColumnMap.Type.LONG)
+        .addColumn(
+                YambaContract.Timeline.Columns.USER,
+                YambaDbHelper.COL_USER,
+                ColumnMap.Type.STRING)
+        .addColumn(
+                YambaContract.Timeline.Columns.STATUS,
+                YambaDbHelper.COL_STATUS,
+                ColumnMap.Type.STRING)
         .build();
 
-    private static final ProjectionMap PROJ_MAP_TIMELINE = new ProjectionMap.Builder()
+    private static final Map<String, String> PROJ_MAP_TIMELINE = new ProjectionMap.Builder()
         .addColumn(YambaContract.Timeline.Columns.ID, YambaDbHelper.COL_ID)
-        .build();
+        .addColumn(YambaContract.Timeline.Columns.TIMESTAMP, YambaDbHelper.COL_TIMESTAMP)
+        .addColumn(YambaContract.Timeline.Columns.USER, YambaDbHelper.COL_USER)
+        .addColumn(YambaContract.Timeline.Columns.STATUS, YambaDbHelper.COL_STATUS)
+        .addColumn(
+                YambaContract.Timeline.Columns.MAX_TIMESTAMP,
+                "max(" + YambaDbHelper.COL_TIMESTAMP + ")")
+        .build().getProjectionMap();
 
 
     private YambaDbHelper dbHelper;
@@ -83,7 +106,7 @@ public class YambaProvider extends ContentProvider {
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
         qb.setTables(table);
 
-        qb.setProjectionMap(PROJ_MAP_TIMELINE.getProjectionMap());
+        qb.setProjectionMap(PROJ_MAP_TIMELINE);
 
         if (0 < pk) { qb.appendWhere(YambaDbHelper.COL_ID + "=" + pk); }
 
