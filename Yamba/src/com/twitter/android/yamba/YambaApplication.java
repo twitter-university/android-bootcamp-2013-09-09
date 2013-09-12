@@ -7,7 +7,7 @@ import com.twitter.android.yamba.svc.YambaService;
 
 
 public class YambaApplication extends Application {
-    private static final String TAG = "SVC";
+    private static final String TAG = "APP";
 
     @Override
     public void onCreate() {

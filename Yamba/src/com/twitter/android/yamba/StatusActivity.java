@@ -31,6 +31,7 @@ public class StatusActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (BuildConfig.DEBUG) { Log.d(TAG, "created"); }
 
         Resources rez = getResources();
         okColor = rez.getColor(R.color.green);
