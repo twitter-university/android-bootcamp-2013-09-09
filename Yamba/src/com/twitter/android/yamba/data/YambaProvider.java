@@ -12,8 +12,8 @@ import android.util.Log;
 public class YambaProvider extends ContentProvider {
     private static final String TAG = "PROVIDER";
 
-    //  scheme            authority             path    [id]
-    // content://com.marakana.android.yamba/contactphone/7
+    //  scheme           authority             path    [id]
+    // content://com.twitter.android.yamba.timeline/timeline/7
     private static final UriMatcher MATCHER = new UriMatcher(UriMatcher.NO_MATCH);
     static {
     }

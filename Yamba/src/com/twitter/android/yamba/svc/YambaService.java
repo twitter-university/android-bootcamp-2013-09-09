@@ -1,5 +1,6 @@
 package com.twitter.android.yamba.svc;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import android.app.AlarmManager;
@@ -9,7 +10,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -20,7 +20,7 @@ import com.marakana.android.yamba.clientlib.YambaClient.Status;
 import com.marakana.android.yamba.clientlib.YambaClientException;
 import com.twitter.android.yamba.BuildConfig;
 import com.twitter.android.yamba.R;
-import com.twitter.android.yamba.data.YambaDbHelper;
+import com.twitter.android.yamba.YambaContract;
 
 
 public class YambaService extends IntentService {
@@ -94,7 +94,6 @@ public class YambaService extends IntentService {
     private static long pollInterval;
 
 
-    private volatile YambaDbHelper dbHelper;
     private volatile YambaClient client;
     private volatile int pollSize;
     private volatile Hdlr hdlr;
@@ -110,17 +109,8 @@ public class YambaService extends IntentService {
 
         client = new YambaClient("student", "password");
 
-        dbHelper = new YambaDbHelper(this);
-
         hdlr = new Hdlr(this);
    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if (BuildConfig.DEBUG) { Log.d(TAG, "destroyed"); }
-        dbHelper.close();
-    }
 
     void postComplete(int msg) {
         Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
@@ -166,39 +156,42 @@ public class YambaService extends IntentService {
     }
 
     private int parseTimeline(List<Status> timeline) {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-
-        long latest = getLatestStatusTime(db);
+        long latest = getLatestStatusTime();
         if (BuildConfig.DEBUG) { Log.d(TAG, "latest: " + latest); }
 
-        int i = 0;
+        List<ContentValues> vals = new ArrayList<ContentValues>();
+
         for (Status status: timeline) {
             long t = status.getCreatedAt().getTime();
             if (t <= latest) { continue; }
 
             ContentValues cv = new ContentValues();
-            cv.put(YambaDbHelper.COL_ID, Long.valueOf(status.getId()));
-            cv.put(YambaDbHelper.COL_TIMESTAMP, Long.valueOf(t));
-            cv.put(YambaDbHelper.COL_USER, status.getUser());
-            cv.put(YambaDbHelper.COL_STATUS, status.getMessage());
-            if (0 < db.insert(YambaDbHelper.TABLE_TIMELINE, null, cv)) { i++; }
+            cv.put(YambaContract.Timeline.Columns.ID, Long.valueOf(status.getId()));
+            cv.put(YambaContract.Timeline.Columns.TIMESTAMP, Long.valueOf(t));
+            cv.put(YambaContract.Timeline.Columns.USER, status.getUser());
+            cv.put(YambaContract.Timeline.Columns.STATUS, status.getMessage());
+            vals.add(cv);
         }
 
-        if (BuildConfig.DEBUG) { Log.d(TAG, "inserted: " + i); }
-        return i;
+        int n = vals.size();
+        if (0 >= n) { return 0; }
+        n = getContentResolver().bulkInsert(
+                YambaContract.Timeline.URI,
+                vals.toArray(new ContentValues[n]));
+
+        if (BuildConfig.DEBUG) { Log.d(TAG, "inserted: " + n); }
+        return n;
     }
 
-    private long getLatestStatusTime(SQLiteDatabase db) {
+    private long getLatestStatusTime() {
         Cursor c = null;
         try {
             // select max(timestmp) from timeline;
-            c = db.query(
-                    YambaDbHelper.TABLE_TIMELINE,
-                    new String[] { "max(" + YambaDbHelper.COL_TIMESTAMP + ")" },
-                    null,  // where
-                    null,  //  ...(where args)
-                    null,  // group by
-                    null,  // having
+            c = getContentResolver().query(
+                    YambaContract.Timeline.URI,
+                    new String[] { YambaContract.Timeline.Columns.MAX_TIMESTAMP },
+                    null,  // WHERE foo = ? AND bar = ?
+                    null,  //      [ 7, "baz" ]
                     null); // order by
             return ((null == c) || (!c.moveToNext()))
                     ? Long.MIN_VALUE

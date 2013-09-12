@@ -17,6 +17,7 @@ public class YambaContract {
         .authority(AUTHORITY)
         .build();
 
+
     private static final String MINOR_TYPE = "/vnd." + AUTHORITY;
 
     public static final String ITEM_TYPE
@@ -35,9 +36,9 @@ public class YambaContract {
             public static final String ID = BaseColumns._ID;
             public static final String USER = "user";
             public static final String STATUS = "status";
-            public static final String CREATED_AT = "created_at";
+            public static final String TIMESTAMP = "timestamp";
 
-            public static final String MAX_TIMESTAMP = "maxts";
+            public static final String MAX_TIMESTAMP = "max_ts";
         }
     }
 }
