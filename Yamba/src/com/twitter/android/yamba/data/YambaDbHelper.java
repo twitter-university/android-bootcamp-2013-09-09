@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 
-public class YambaDbHelper extends SQLiteOpenHelper {
+class YambaDbHelper extends SQLiteOpenHelper {
     private static final String TAG = "DB";
 
     public static final String DATABASE = "yamba.db";
