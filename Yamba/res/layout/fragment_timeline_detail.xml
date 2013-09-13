@@ -3,13 +3,8 @@
     android:id="@+id/timeline_details"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/background"
     android:orientation="vertical"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context=".TimelineDetailActivity" >
+    tools:context=".TimelineDetailFragment" >
 
     <TextView
         android:id="@+id/timeline_detail_user"
