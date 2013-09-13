@@ -39,6 +39,7 @@ public class TimelineDetailActivity extends Activity {
 
     private View details;
 
+
     @Override
     protected void onCreate(Bundle state) {
         super.onCreate(state);
