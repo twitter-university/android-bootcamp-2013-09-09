@@ -79,11 +79,18 @@ public class TimelineFragment extends ListFragment implements LoaderCallbacks<Cu
     public void onListItemClick(ListView l, View v, int p, long id) {
         Cursor c = (Cursor) l.getItemAtPosition(p);
 
-        TimelineDetailActivity.showDetails(
-                getActivity(),
-                c.getLong(c.getColumnIndex(YambaContract.Timeline.Columns.TIMESTAMP)),
-                c.getString(c.getColumnIndex(YambaContract.Timeline.Columns.USER)),
-                c.getString(c.getColumnIndex(YambaContract.Timeline.Columns.STATUS)));
+        // Fragments
+        ((TimelineActivity) getActivity()).showDetails(
+              c.getLong(c.getColumnIndex(YambaContract.Timeline.Columns.TIMESTAMP)),
+              c.getString(c.getColumnIndex(YambaContract.Timeline.Columns.USER)),
+              c.getString(c.getColumnIndex(YambaContract.Timeline.Columns.STATUS)));
+
+// Stack of cards
+//        TimelineDetailActivity.showDetails(
+//                getActivity(),
+//                c.getLong(c.getColumnIndex(YambaContract.Timeline.Columns.TIMESTAMP)),
+//                c.getString(c.getColumnIndex(YambaContract.Timeline.Columns.USER)),
+//                c.getString(c.getColumnIndex(YambaContract.Timeline.Columns.STATUS)));
     }
 
     @Override

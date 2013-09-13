@@ -10,7 +10,7 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 
-public class YambaActivity extends Activity {
+public abstract class YambaActivity extends Activity {
     private final int layout;
     private final String tag;
 
