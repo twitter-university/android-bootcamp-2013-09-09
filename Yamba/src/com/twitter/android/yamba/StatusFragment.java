@@ -32,8 +32,9 @@ public class StatusFragment extends Fragment {
     private Button submitButton;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle state) {
+    public void onCreate(Bundle savedInstanceState) {
         if (BuildConfig.DEBUG) { Log.d(TAG, "created"); }
+        super.onCreate(savedInstanceState);
 
         Resources rez = getResources();
         okColor = rez.getColor(R.color.green);
@@ -42,6 +43,11 @@ public class StatusFragment extends Fragment {
         warnMax = rez.getInteger(R.integer.warn_limit);
         errColor = rez.getColor(R.color.red);
         errMax = rez.getInteger(R.integer.err_limit);
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle state) {
+        if (BuildConfig.DEBUG) { Log.d(TAG, "view created"); }
 
         View v = inflater.inflate(R.layout.fragment_status, parent, false);
 

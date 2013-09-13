@@ -19,14 +19,11 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.format.DateUtils;
 import android.util.Log;
-import android.view.View;
-import android.widget.TextView;
 
 
 public class TimelineDetailActivity extends Activity {
-    private static final String TAG = "DETAILS";
+    private static final String TAG = "DETAILSACT";
 
     public static void showDetails(Context ctxt, long ts, String user, String status) {
         Intent i = new Intent(ctxt, TimelineDetailActivity.class);
@@ -36,30 +33,11 @@ public class TimelineDetailActivity extends Activity {
         ctxt.startActivity(i);
     }
 
-
-    private View details;
-
-
     @Override
     protected void onCreate(Bundle state) {
         super.onCreate(state);
         if (BuildConfig.DEBUG) { Log.d(TAG, "created"); }
 
         setContentView(R.layout.activity_timeline_detail);
-        details = findViewById(R.id.timeline_details);
-
-        setDetails(getIntent().getExtras());
-    }
-
-    public void setDetails(Bundle args) {
-        if ((null == args) || (null == details)) { return; }
-
-        ((TextView) details.findViewById(R.id.timeline_detail_timestamp))
-        .setText(DateUtils.getRelativeTimeSpanString(
-                args.getLong(YambaContract.Timeline.Columns.TIMESTAMP, 0L)));
-        ((TextView) details.findViewById(R.id.timeline_detail_user)).setText(
-                args.getString(YambaContract.Timeline.Columns.USER));
-        ((TextView) details.findViewById(R.id.timeline_detail_status)).setText(
-                args.getString(YambaContract.Timeline.Columns.STATUS));
-    }
+     }
 }
