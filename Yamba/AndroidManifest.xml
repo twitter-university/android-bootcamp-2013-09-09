@@ -4,11 +4,23 @@
     android:versionCode="1"
     android:versionName="1.0" >
 
+    <permission
+        android:name="com.twitter.android.yamba.timeline.READ"
+        android:description="@string/perm_timeline_read_desc"
+        android:label="@string/perm_timeline_read_label"
+        android:protectionLevel="dangerous" />
+    <permission
+        android:name="com.twitter.android.yamba.timeline.WRITE"
+        android:description="@string/perm_timeline_write_desc"
+        android:label="@string/perm_timeline_write_label"
+        android:protectionLevel="signature" />
+
     <uses-sdk
         android:minSdkVersion="18"
         android:targetSdkVersion="18" />
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:name=".YambaApplication"
@@ -27,13 +39,20 @@
         </activity>
         <activity android:name=".StatusActivity" />
         <activity android:name=".TimelineDetailActivity" />
-        
+
         <service android:name=".svc.YambaService" />
 
         <provider
             android:name=".data.YambaProvider"
             android:authorities="com.twitter.android.yamba.timeline"
-            android:exported="false" />
+            android:readPermission="com.twitter.android.yamba.timeline.READ"
+            android:writePermission="com.twitter.android.yamba.timeline.WRITE" />
+
+        <receiver android:name=".svc.BootReceiver" >
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_RECEIVED" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

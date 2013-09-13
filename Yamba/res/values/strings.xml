@@ -7,6 +7,10 @@
     <string name="menu_status">Status</string>
     <string name="menu_about">About</string>
     <string name="about_yamba">Yamba @Twitter\n    Bootcamp 9/13/2013</string>
+    <string name="perm_timeline_read_label">Timeline Read</string>
+    <string name="perm_timeline_read_desc">Permission to read the timeline</string>
+    <string name="perm_timeline_write_label">Timeline Write</string>
+    <string name="perm_timeline_write_desc">Permission to write the timeline</string>
 
     <!-- Status -->
     <string name="status_label">Status</string>

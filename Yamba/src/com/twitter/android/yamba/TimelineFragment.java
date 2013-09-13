@@ -3,6 +3,7 @@ package com.twitter.android.yamba;
 import android.app.ListFragment;
 import android.app.LoaderManager.LoaderCallbacks;
 import android.content.CursorLoader;
+import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -79,18 +80,13 @@ public class TimelineFragment extends ListFragment implements LoaderCallbacks<Cu
     public void onListItemClick(ListView l, View v, int p, long id) {
         Cursor c = (Cursor) l.getItemAtPosition(p);
 
-        // Fragments
-        ((TimelineActivity) getActivity()).showDetails(
-              c.getLong(c.getColumnIndex(YambaContract.Timeline.Columns.TIMESTAMP)),
-              c.getString(c.getColumnIndex(YambaContract.Timeline.Columns.USER)),
-              c.getString(c.getColumnIndex(YambaContract.Timeline.Columns.STATUS)));
+        Intent i = TimelineDetailFragment.marshallDetails(
+                getActivity(),
+                c.getLong(c.getColumnIndex(YambaContract.Timeline.Columns.TIMESTAMP)),
+                c.getString(c.getColumnIndex(YambaContract.Timeline.Columns.USER)),
+                c.getString(c.getColumnIndex(YambaContract.Timeline.Columns.STATUS)));
 
-// Stack of cards
-//        TimelineDetailActivity.showDetails(
-//                getActivity(),
-//                c.getLong(c.getColumnIndex(YambaContract.Timeline.Columns.TIMESTAMP)),
-//                c.getString(c.getColumnIndex(YambaContract.Timeline.Columns.USER)),
-//                c.getString(c.getColumnIndex(YambaContract.Timeline.Columns.STATUS)));
+        startActivity(i);
     }
 
     @Override
@@ -114,5 +110,4 @@ public class TimelineFragment extends ListFragment implements LoaderCallbacks<Cu
 
         return v;
     }
-
 }

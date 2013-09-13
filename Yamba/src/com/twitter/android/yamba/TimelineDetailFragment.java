@@ -1,6 +1,8 @@
 package com.twitter.android.yamba;
 
 import android.app.Fragment;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.format.DateUtils;
 import android.util.Log;
@@ -12,6 +14,14 @@ import android.widget.TextView;
 
 public class TimelineDetailFragment extends Fragment {
     private static final String TAG = "DETAILS";
+
+    public static Intent marshallDetails(Context ctxt, long ts, String user, String status) {
+        Intent i = new Intent(ctxt, TimelineDetailActivity.class);
+        i.putExtra(YambaContract.Timeline.Columns.TIMESTAMP, ts);
+        i.putExtra(YambaContract.Timeline.Columns.USER, user);
+        i.putExtra(YambaContract.Timeline.Columns.STATUS, status);
+        return i;
+    }
 
     public static Fragment newInstance(Bundle args) {
         Fragment details = new TimelineDetailFragment();
@@ -29,11 +39,12 @@ public class TimelineDetailFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_timeline_detail, parent, false);
         details = v.findViewById(R.id.timeline_details);
 
-        //setDetails(getActivity().getIntent().getExtras());
         setDetails(getArguments());
 
         return v;
     }
+
+
 
     public void setDetails(Bundle args) {
         if ((null == args) || (null == details)) { return; }

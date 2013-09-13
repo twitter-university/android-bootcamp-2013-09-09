@@ -71,6 +71,11 @@ public class YambaService extends IntentService {
                 createPollingIntent(ctxt));
     }
 
+    public static void stopPoller(Context ctxt) {
+        ((AlarmManager) ctxt.getSystemService(Context.ALARM_SERVICE))
+            .cancel(createPollingIntent(ctxt));
+    }
+
     private static PendingIntent createPollingIntent(Context ctxt) {
         Intent i = new Intent(ctxt, YambaService.class);
         i.putExtra(PARAM_OP, OP_POLL);
