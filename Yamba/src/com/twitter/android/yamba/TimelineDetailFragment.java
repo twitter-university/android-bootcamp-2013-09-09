@@ -44,8 +44,6 @@ public class TimelineDetailFragment extends Fragment {
         return v;
     }
 
-
-
     public void setDetails(Bundle args) {
         if ((null == args) || (null == details)) { return; }
 

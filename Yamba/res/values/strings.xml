@@ -20,4 +20,8 @@
     <string name="fail">Post failed!</string>
     <string name="success">Post succeeded!</string>
 
+    <!-- Notifications -->
+    <string name="notify_title">New Status!</string>
+    <string name="notify_message">new messages</string>
+    
 </resources>

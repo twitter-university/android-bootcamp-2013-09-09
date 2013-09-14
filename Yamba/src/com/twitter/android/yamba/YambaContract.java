@@ -17,6 +17,10 @@ public class YambaContract {
         .authority(AUTHORITY)
         .build();
 
+    public static final String BROADCAST_TIMELINE_UPDATE
+        = "com.twitter.android.yamba.action.NEW_STATUS";
+    public static final String TIMELINE_UPDATE_COUNT
+        = "com.marakana.android.yamba.action.NEW_STATUS_COUNT";
 
     private static final String MINOR_TYPE = "/vnd." + AUTHORITY;
 

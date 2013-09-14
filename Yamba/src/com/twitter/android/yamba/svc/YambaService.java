@@ -5,10 +5,13 @@ import java.util.List;
 
 import android.app.AlarmManager;
 import android.app.IntentService;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.os.Handler;
 import android.os.Message;
@@ -20,11 +23,15 @@ import com.marakana.android.yamba.clientlib.YambaClient.Status;
 import com.marakana.android.yamba.clientlib.YambaClientException;
 import com.twitter.android.yamba.BuildConfig;
 import com.twitter.android.yamba.R;
+import com.twitter.android.yamba.TimelineActivity;
 import com.twitter.android.yamba.YambaContract;
 
 
 public class YambaService extends IntentService {
     private static final String TAG = "SVC";
+
+    private static final int NOTIFICATION_ID = 7;
+    private static final int NOTIFICATION_INTENT_ID = 13;
 
     private static final int POLLER = 666;
 
@@ -102,6 +109,8 @@ public class YambaService extends IntentService {
     private volatile YambaClient client;
     private volatile int pollSize;
     private volatile Hdlr hdlr;
+    private volatile String notifyTitle;
+    private volatile String notifyMessage;
 
     public YambaService() { super(TAG); }
 
@@ -110,7 +119,11 @@ public class YambaService extends IntentService {
         super.onCreate();
         if (BuildConfig.DEBUG) { Log.d(TAG, "created"); }
 
-        pollSize = getResources().getInteger(R.integer.poll_size);
+        Resources rez = getResources();
+
+        pollSize = rez.getInteger(R.integer.poll_size);
+        notifyTitle = rez.getString(R.string.notify_title);
+        notifyMessage = rez.getString(R.string.notify_message);
 
         client = new YambaClient("student", "password");
 
@@ -154,10 +167,14 @@ public class YambaService extends IntentService {
 
     private void doPoll() {
         if (BuildConfig.DEBUG) { Log.d(TAG, "poll"); }
-        try { parseTimeline(client.getTimeline(pollSize)); }
+
+        int n = 0;
+        try { n = parseTimeline(client.getTimeline(pollSize)); }
         catch (YambaClientException e) {
             Log.e(TAG, "Poll failed");
         }
+
+        if (0 < n) { notify(n); }
     }
 
     private int parseTimeline(List<Status> timeline) {
@@ -191,13 +208,12 @@ public class YambaService extends IntentService {
     private long getLatestStatusTime() {
         Cursor c = null;
         try {
-            // select max(timestmp) from timeline;
             c = getContentResolver().query(
                     YambaContract.Timeline.URI,
                     new String[] { YambaContract.Timeline.Columns.MAX_TIMESTAMP },
-                    null,  // WHERE foo = ? AND bar = ?
-                    null,  //      [ 7, "baz" ]
-                    null); // order by
+                    null,
+                    null,
+                    null);
             return ((null == c) || (!c.moveToNext()))
                     ? Long.MIN_VALUE
                     : c.getLong(0);
@@ -205,5 +221,25 @@ public class YambaService extends IntentService {
         finally {
             if (null != c) { c.close(); }
         }
+    }
+
+    public void notify(int count) {
+        PendingIntent pi = PendingIntent.getActivity(
+                this,
+                NOTIFICATION_INTENT_ID,
+                new Intent(this, TimelineActivity.class),
+                0);
+
+        ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE))
+        .notify(
+                NOTIFICATION_ID,
+                new Notification.Builder(this)
+                .setContentTitle(notifyTitle)
+                .setContentText(count + notifyMessage)
+                .setAutoCancel(true)
+                .setSmallIcon(android.R.drawable.stat_notify_more)
+                .setWhen(System.currentTimeMillis())
+                .setContentIntent(pi)
+                .build());   // works as of version 16
     }
 }
