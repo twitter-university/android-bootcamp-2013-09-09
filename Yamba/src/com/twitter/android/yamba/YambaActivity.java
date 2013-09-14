@@ -41,15 +41,22 @@ public abstract class YambaActivity extends Activity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case android.R.id.home:
-            case R.id.menu_about:
-                about();
-                break;
             case R.id.menu_timeline:
                 nextPage(TimelineActivity.class);
                 break;
             case R.id.menu_status:
                 nextPage(StatusActivity.class);
+                break;
+            case android.R.id.home:
+            case R.id.menu_about:
+                about();
+                break;
+            case R.id.menu_prefs:
+                Intent i = new Intent(this, PrefsActivity.class);
+                i.putExtra(
+                        ":android:show_fragment",
+                        "com.twitter.android.yamba.PrefsActivity$ClientPrefs");
+                startActivity(i);
                 break;
             default:
                 return super.onOptionsItemSelected(item);

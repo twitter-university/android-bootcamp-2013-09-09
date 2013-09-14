@@ -24,6 +24,7 @@ import com.marakana.android.yamba.clientlib.YambaClientException;
 import com.twitter.android.yamba.BuildConfig;
 import com.twitter.android.yamba.R;
 import com.twitter.android.yamba.TimelineActivity;
+import com.twitter.android.yamba.YambaApplication;
 import com.twitter.android.yamba.YambaContract;
 
 
@@ -106,9 +107,8 @@ public class YambaService extends IntentService {
     private static long pollInterval;
 
 
-    private volatile YambaClient client;
-    private volatile int pollSize;
     private volatile Hdlr hdlr;
+    private volatile int pollSize;
     private volatile String notifyTitle;
     private volatile String notifyMessage;
 
@@ -124,8 +124,6 @@ public class YambaService extends IntentService {
         pollSize = rez.getInteger(R.integer.poll_size);
         notifyTitle = rez.getString(R.string.notify_title);
         notifyMessage = rez.getString(R.string.notify_message);
-
-        client = new YambaClient("student", "password");
 
         hdlr = new Hdlr(this);
    }
@@ -154,7 +152,7 @@ public class YambaService extends IntentService {
     private void doPost(String status) {
         int msg = R.string.fail;
         try {
-            client.postStatus(status);
+            getClient().postStatus(status);
             msg = R.string.success;
             if (BuildConfig.DEBUG) { Log.d(TAG, "post succeeded"); }
         }
@@ -169,7 +167,7 @@ public class YambaService extends IntentService {
         if (BuildConfig.DEBUG) { Log.d(TAG, "poll"); }
 
         int n = 0;
-        try { n = parseTimeline(client.getTimeline(pollSize)); }
+        try { n = parseTimeline(getClient().getTimeline(pollSize)); }
         catch (YambaClientException e) {
             Log.e(TAG, "Poll failed");
         }
@@ -223,7 +221,7 @@ public class YambaService extends IntentService {
         }
     }
 
-    public void notify(int count) {
+    private void notify(int count) {
         PendingIntent pi = PendingIntent.getActivity(
                 this,
                 NOTIFICATION_INTENT_ID,
@@ -235,11 +233,15 @@ public class YambaService extends IntentService {
                 NOTIFICATION_ID,
                 new Notification.Builder(this)
                 .setContentTitle(notifyTitle)
-                .setContentText(count + notifyMessage)
+                .setContentText(count + " " + notifyMessage)
                 .setAutoCancel(true)
                 .setSmallIcon(android.R.drawable.stat_notify_more)
                 .setWhen(System.currentTimeMillis())
                 .setContentIntent(pi)
                 .build());   // works as of version 16
+    }
+
+    private YambaClient getClient() throws YambaClientException {
+        return ((YambaApplication) getApplication()).getYambaClient();
     }
 }
